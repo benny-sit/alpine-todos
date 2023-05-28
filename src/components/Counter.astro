@@ -6,29 +6,16 @@ export interface Props {
 	initialCount?: number;
 }
 
-const { initialCount = 0 } = Astro.props;
+const { initialCount = 0 }: Props = Astro.props;
 ---
 
-<div class="counter" x-data={`{ count: ${initialCount} }`}>
+<div class="flex gap-2 justify-center items-center" x-data={`{ count: ${initialCount} }`}>
 	<button x-on:click="count--">-</button>
 	<pre x-text="count">{ initialCount }</pre>
 	<button x-on:click="count++">+</button>
 </div>
 
-<div class="counter-message">
+<div class="text-center">
 	<slot />
 </div>
 
-<style>
-	.counter {
-		display: grid;
-		font-size: 2em;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		margin-top: 2em;
-		place-items: center;
-	}
-
-	.counter-message {
-		text-align: center;
-	}
-</style>

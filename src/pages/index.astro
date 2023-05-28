@@ -1,39 +1,86 @@
 ---
 // Component Imports
-import Counter from '../components/Counter.astro';
-
-// Full Astro Component Syntax:
-// https://docs.astro.build/core-concepts/astro-components/
+import Layout from "../layouts/Layout.astro";
+import ToDos from "../components/ToDos.astro";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<style>
-			html,
-			body {
-				font-family: system-ui;
-				margin: 0;
-			}
-			body {
-				padding: 2rem;
-			}
-		</style>
-	</head>
-	<body>
-		<main>
-			<!-- Note: no `client:load` necessary since AlpineJS is always included -->
-			<Counter>
-				<h1>Hello, AlpineJS!</h1>
-			</Counter>
+<Layout title={"To Do List"}>
+  <ToDos className={"mt-3"} />
+</Layout>
 
-			<!-- Note: pass props to Astro components to initialize Alpine with a certain state -->
-			<Counter initialCount={5}>
-				<h2>Use Astro to pass in server-side props</h2>
-			</Counter>
-		</main>
-	</body>
-</html>
+<script>
+  import type { ToDo } from "../interfaces/todo.interface";
+
+  import Alpine from "alpinejs";
+  import persist from "@alpinejs/persist";
+  Alpine.plugin(persist);
+
+  function userDate(date: string) {
+    // Make a fuzzy time
+		console.log(new Date(date).getTime(), "======" ,new Date().getTime());
+    let delta = Math.round((+new Date().getTime() - new Date(date).getTime()) / 1000);
+		console.log(delta, "delta");
+
+    let minute = 60,
+      hour = minute * 60,
+      day = hour * 24,
+      week = day * 7;
+
+    let fuzzy;
+
+    if (delta < 30) {
+      fuzzy = "just then.";
+    } else if (delta < minute) {
+      fuzzy = delta + " seconds ago.";
+    } else if (delta < 2 * minute) {
+      fuzzy = "a minute ago.";
+    } else if (delta < hour) {
+      fuzzy = Math.floor(delta / minute) + " minutes ago.";
+    } else if (Math.floor(delta / hour) == 1) {
+      fuzzy = "1 hour ago.";
+    } else if (delta < day) {
+      fuzzy = Math.floor(delta / hour) + " hours ago.";
+    } else if (delta < day * 2) {
+      fuzzy = "yesterday";
+    }
+
+		return fuzzy;
+  }
+
+  Alpine.data("todos", () => ({
+		init() {
+			this.todos = this.todos.map((t: ToDo) => ({...t, userTime: userDate(t.createdAt)}))
+			setInterval(() => {
+				this.todos = this.todos.map((t: ToDo) => ({...t, userTime: userDate(t.createdAt)}))
+			}, 30000);
+		},
+    todos: Alpine.$persist([]),
+    todoName: "",
+    cnt: Alpine.$persist(0),
+    addTodo() {
+      if (!this.todoName) return;
+			const createdAt = new Date();
+			console.log(userDate(createdAt));
+      this.todos.push({
+        isCompleted: false,
+        text: this.todoName,
+        id: this.cnt,
+				createdAt,
+				userTime: userDate(createdAt)
+      });
+      this.todoName = "";
+      this.cnt++;
+    },
+    removeTodo(i: number) {
+      this.todos = this.todos.filter((todo: ToDo) => todo.id !== i);
+    },
+    toggleTodo(i: number) {
+      const todo = this.todos.find((t: ToDo) => t.id === i);
+      todo.isCompleted = !todo.isCompleted;
+    },
+  }));
+
+  // document.addEventListener('alpine:init', () => {
+
+  // })
+</script>

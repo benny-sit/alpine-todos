@@ -1,0 +1,50 @@
+---
+import type { ToDo } from "../interfaces/todo.interface";
+
+export interface Props {
+  className?: string;
+}
+
+const { className = "" } = Astro.props;
+---
+
+<section
+  x-data=`todos`
+  class={`max-w-2xl p-3 w-full mx-auto bg-slate-100 rounded-2xl ${className}`}
+>
+  <h2 class="text-4xl p-3 text-slate-800 font-semibold underline">
+    To Do List
+  </h2>
+  <div class="relative mb-2">
+    <input
+      type="text"
+      x-model="todoName"
+      class="block w-full rounded py-1 pl-2 pr-7 outline-gray-300 outline-0 focus:outline-1 transition-all"
+      @keyup.enter="addTodo"
+    />
+    <button
+      @click="addTodo"
+      class="absolute right-0 top-0 bottom-0 text-lg font-bold p-0 grid place-content-center aspect-square border-gray-200 hover:bg-white hover:border active:bg-gray-50 text-gray-600 leading-none rounded-r"
+      >+</button
+    >
+  </div>
+  <ul class="flex flex-col gap-1">
+    <template x-for="todo in todos" :key="todo.id">
+      <li
+        class="rounded bg-gray-50 hover:bg-white flex items-center p-1 group"
+        tabindex="0"
+      >
+        <span class="mr-auto">
+          <span class="text-gray-800" :class="todo.isCompleted && 'line-through'" x-text="todo.text"></span>
+          <span class="text-gray-400 relative text-xs inline-block opacity-0 -translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 transition-all" x-text="todo.userTime"></span>
+        </span>
+        <button @click="removeTodo(todo.id)" class="text-gray-500 opacity-0 text-xs mr-3 hover:text-red-500 translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 group-focus-within:opacity-100 group-focus-within:translate-x-0 transition-all">remove</button>
+        <button
+          @click="toggleTodo(todo.id)"
+          :class=`{'before:border-green-300 hover:before:border-green-300': todo.isCompleted}`
+          class="relative h-6 aspect-square grid place-items-center hover:before:border-slate-400 before:w-4 before:h-2 before:border-b-2 before:border-l-2 before:border-slate-200 before:absolute before:-rotate-45"
+        ></button>
+      </li>
+    </template>
+  </ul>
+</section>
